@@ -1,0 +1,52 @@
+# FileName=stirling-pdf
+[Pod]
+PodName=stirling-pdf
+PublishPort= 127.0.0.1:9000:8080
+UserNS=keep-id
+
+[Service]
+Restart=on-failure
+
+---
+
+# FileName=stirling-pdf
+[Container]
+Image=docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest
+AutoUpdate=registry
+Pod=stirling-pdf.pod
+
+Volume=%h/tessdata:/usr/share/tessdata:z
+Volume=%h/configs:/configs:z
+Volume=%h/logs:/logs:Z
+Volume=%h/pipeline:/pipeline:z
+
+Environment=SYSTEM_DEFAULTLOCALE=de-DE
+
+# Optional AI Engine (selfhosted)
+Environment=AIENGINE_ENABLED=true
+Environment=AIENGINE_URL=http://localhost:5001
+Environment=AIENGINE_MODE=SELF_HOSTED
+
+Secret=stirling_engine_shared_secret,type=env,target=STIRLING_ENGINE_SHARED_SECRET
+
+[Service]
+Restart=on-failure
+
+---
+
+# FileName=stirling-pdf-engine
+[Container]
+Image=ghcr.io/stirling-tools/stirling-engine:latest
+AutoUpdate=registry
+Pod=stirling-pdf.pod
+
+Volume=%h/engine-data:/app/engine/data:Z
+
+Environment=STIRLING_ENGINE_REQUIRE_AUTH=true
+
+Secret=stirling_engine_shared_secret,type=env,target=STIRLING_ENGINE_SHARED_SECRET
+
+StopTimeout=30
+
+[Service]
+Restart=on-failure
