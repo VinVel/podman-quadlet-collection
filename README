@@ -14,7 +14,7 @@ chmod +x ./add-system-user.sh
 ./add-system-user.sh system-user
 
 sudo -u system-user podman quadlet install ./podman-quadlet.quadlets
-systemctl --user damoen reload
+sudo -u system-user systemctl --user damoen reload
 ```
 
 # License
