@@ -1,0 +1,47 @@
+# FileName=local-ai
+[Pod]
+PodName=local-ai
+PublishPort=127.0.0.1:11434:11434
+PublishPort=127.0.0.1:3000:8080
+UserNS=keep-id
+
+[Service]
+Restart=on-failure
+
+# FileName=ollama
+[Container]
+Environment=OLLAMA_HOST=0.0.0.0:11434
+
+HealthCmd=["ollama","list"]
+HealthInterval=30s
+HealthRetries=3
+HealthStartPeriod=40s
+HealthTimeout=10s
+
+Image=ollama/ollama:latest
+Pod=local-ai.pod
+Volume=%h/ollama-data:/root/.ollama:Z
+
+
+[Service]
+Restart=always
+
+---
+
+# FileName=open-webui
+[Unit]
+Requires=ollama.service
+After=ollama.service
+
+[Container]
+Image=ghcr.io/open-webui/open-webui:latest
+Volume=%h/open-webui-data:/app/backend/data:Z
+Pod=local-ai.pod
+
+Environment=OLLAMA_BASE_URL=http://localhost:11434
+Environment=ENABLE_SIGNUP=true
+
+Secret=webui_secret_key,type=env,target=WEBUI_SECRET_KEY
+
+[Service]
+Restart=always
