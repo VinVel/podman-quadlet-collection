@@ -7,14 +7,14 @@ This is my personal collection of podman `.quadlets` files for deploying some  a
 If you choose to give my `.quadlets` a try, to install them use the following commands (rootless):
 
 ```sh
-git clone https://github.com/VinVel/quadlets-collection.git 
-cd quadlets-collection
+git clone https://github.com/VinVel/podman-quadlet-collection.git 
+cd ./podman-quadlet-collection
 
 chmod +x ./add-system-user.sh
 ./add-system-user.sh system-user
 
 sudo -u system-user podman quadlet install ./podman-quadlet.quadlets
-sudo -u system-user systemctl --user damoen reload
+sudo -u system-user systemctl --user daemon-reload
 ```
 
 # License
