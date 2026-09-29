@@ -1,0 +1,89 @@
+# FileName=paperless-ngx
+[Pod]
+PodName=paperless-ngx
+PublishPort=8000:8000
+UserNS=keep-id
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+---
+
+# FileName=paperless-ngx-broker
+[Container]
+Image=docker.io/valkey/valkey:9-alpine
+Volume=%h/valkey:/data:Z
+AutoUpdate=registry
+Pod=paperless-ngx.pod
+
+[Service]
+Restart=always
+
+---
+
+# FileName=paperless-ngx-webserver
+[Unit]
+Requires=paperless-ngx-broker.service 
+Requires=paperless-ngx-gotenberg.service 
+Requires=paperless-ngx-tika.service
+After=paperless-ngx-broker.service 
+After=paperless-ngx-gotenberg.service 
+After=paperless-ngx-tika.service
+
+[Container]
+Environment=PAPERLESS_REDIS=redis://localhost:6379    
+Environment=PAPERLESS_DBENGINE=sqlite
+
+Environment=PAPERLESS_TIKA_ENABLED=1
+Environment=PAPERLESS_TIKA_GOTENBERG_ENDPOINT=http://localhost:3000
+Environment=PAPERLESS_TIKA_ENDPOINT=http://localhost:9998
+
+Pod=paperless-ngx.pod
+
+Image=ghcr.io/paperless-ngx/paperless-ngx:latest
+AutoUpdate=registry
+
+# This assumes that the user running this container has its 
+# home directory under e.g. /var/lib/paperless-ngx
+Volume=%h/data:/usr/src/paperless/data:Z
+Volume=%h/media:/usr/src/paperless/media:Z
+Volume=%h/export:/usr/src/paperless/export:z
+Volume=%h/consume:/usr/src/paperless/consume:z
+
+Environment=PAPERLESS_TIME_ZONE=Europe/Berlin
+
+# Need to create podman secrets first before it is usable, e.g. like this:
+# $ systemd-ask-password -n | podman secret create paperless_secret_key -
+# Note: This needs to be executed as the corresponding system-user
+Secret=paperless_secret_key,type=env,target=PAPERLESS_SECRET_KEY
+
+# Optional:
+# Environment=PAPERLESS_URL=https://paperless.example.com
+# Environment=PAPERLESS_OCR_LANGUAGE=deu+eng
+
+[Service]
+Restart=always
+
+---
+
+# FileName=paperless-ngx-gotenberg
+[Container]
+Exec=gotenberg '--chromium-disable-javascript=true' '--chromium-allow-list=file:///tmp/.*'
+Image=docker.io/gotenberg/gotenberg:8.37
+AutoUpdate=registry
+Pod=paperless-ngx.pod
+
+[Service]
+Restart=always
+
+---
+
+# FileName=paperless-ngx-tika
+[Container]
+Image=docker.io/apache/tika:3.3.1.0
+AutoUpdate=registry
+Pod=paperless-ngx.pod
+
+[Service]
+Restart=always
