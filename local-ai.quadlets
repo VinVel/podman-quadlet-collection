@@ -22,6 +22,8 @@ Image=ollama/ollama:latest
 Pod=local-ai.pod
 Volume=%h/ollama-data:/root/.ollama:Z
 
+AddDevice=nvidia.com/gpu=all
+SecurityLabelDisable=true
 
 [Service]
 Restart=always
