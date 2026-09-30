@@ -26,6 +26,7 @@ AddDevice=nvidia.com/gpu=all
 SecurityLabelDisable=true
 
 [Service]
+ExecStartPre=/usr/bin/mkdir -p %h/ollama-data
 Restart=always
 
 ---
@@ -46,4 +47,5 @@ Environment=ENABLE_SIGNUP=true
 Secret=webui_secret_key,type=env,target=WEBUI_SECRET_KEY
 
 [Service]
+ExecStartPre=/usr/bin/mkdir -p %h/open-webui-data
 Restart=always

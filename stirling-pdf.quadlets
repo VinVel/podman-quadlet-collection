@@ -30,6 +30,10 @@ Environment=AIENGINE_MODE=SELF_HOSTED
 Secret=stirling_engine_shared_secret,type=env,target=STIRLING_ENGINE_SHARED_SECRET
 
 [Service]
+ExecStartPre=/usr/bin/mkdir -p %h/tessdata
+ExecStartPre=/usr/bin/mkdir -p %h/configs
+ExecStartPre=/usr/bin/mkdir -p %h/logs
+ExecStartPre=/usr/bin/mkdir -p %h/pipeline
 Restart=on-failure
 
 ---
@@ -49,4 +53,5 @@ Secret=stirling_engine_shared_secret,type=env,target=STIRLING_ENGINE_SHARED_SECR
 StopTimeout=30
 
 [Service]
+ExecStartPre=/usr/bin/mkdir -p %h/engine-data
 Restart=on-failure
