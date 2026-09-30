@@ -3,10 +3,12 @@
 PodName=local-ai
 PublishPort=127.0.0.1:11434:11434
 PublishPort=127.0.0.1:3000:8080
-UserNS=keep-id
 
 [Service]
 Restart=on-failure
+TimeoutStartSec=900
+
+---
 
 # FileName=ollama
 [Container]
@@ -18,12 +20,18 @@ HealthRetries=3
 HealthStartPeriod=40s
 HealthTimeout=10s
 
-Image=ollama/ollama:latest
+Image=docker.io/ollama/ollama:latest
 Pod=local-ai.pod
 Volume=%h/ollama-data:/root/.ollama:Z
 
+# For nvidia-gpu to work you will have to execute this command:
+# $ sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 AddDevice=nvidia.com/gpu=all
 SecurityLabelDisable=true
+
+# In order to more easily interact with this container, it could make sense to
+# create an alias and add it to e.g. .bashrc in the following way
+# alias ollama="sudo -u jarvis podman exec -it systemd-ollama /usr/bin/bash"
 
 [Service]
 ExecStartPre=/usr/bin/mkdir -p %h/ollama-data
@@ -37,7 +45,7 @@ Requires=ollama.service
 After=ollama.service
 
 [Container]
-Image=ghcr.io/open-webui/open-webui:latest
+Image=ghcr.io/open-webui/open-webui:cuda
 Volume=%h/open-webui-data:/app/backend/data:Z
 Pod=local-ai.pod
 
