@@ -1,0 +1,21 @@
+# FileName=stalwart
+[Container]
+ContainerName=stalwart
+Image=stalwartlabs/stalwart:v0.16
+
+UserNS=keep-id:uid=2000,gid=2000
+
+PublishPort=127.0.0.1:4343:443
+PublishPort=127.0.0.1:9000:8080
+PublishPort=127.0.0.1:2525:25
+PublishPort=127.0.0.1:1465:465
+PublishPort=127.0.0.1:9393:993
+PublishPort=127.0.0.1:4190:4190
+
+Volume=%h/stalwart-etc:/etc/stalwart:z
+Volume=%h/stalwart-data:/var/lib/stalwart:Z
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/stalwart-etc
+ExecStartPre=/usr/bin/mkdir -p %h/stalwart-data
+Restart=always
