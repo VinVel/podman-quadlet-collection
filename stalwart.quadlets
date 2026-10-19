@@ -1,7 +1,11 @@
 # FileName=stalwart
+[Unit]
+Wants=network-online.target
+After=network-online.target
+
 [Container]
 ContainerName=stalwart
-Image=stalwartlabs/stalwart:v0.16
+Image=docker.io/stalwartlabs/stalwart:v0.16
 
 UserNS=keep-id:uid=2000,gid=2000
 
@@ -19,3 +23,7 @@ Volume=%h/stalwart-data:/var/lib/stalwart:Z
 ExecStartPre=/usr/bin/mkdir -p %h/stalwart-etc
 ExecStartPre=/usr/bin/mkdir -p %h/stalwart-data
 Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
