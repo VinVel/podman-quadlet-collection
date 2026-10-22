@@ -19,7 +19,6 @@ Volume=/usr/share/GeoIP:/usr/share/GeoIP:ro
 
 [Service]
 ExecStartPre=/usr/bin/mkdir -p %h/fail2ban-ui
-ExecStartPre=/usr/bin/mkdir -p %h/fail2ban-etc
 Restart=on-failure
 
 [Install]
