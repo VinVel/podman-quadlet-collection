@@ -1,0 +1,70 @@
+# FileName=pocket-id
+[Unit]
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+ContainerName=pocket-id
+Image=ghcr.io/pocket-id/pocket-id:v2
+
+UserNS=keep-id:uid=2000,gid=2000
+ReadOnly=true
+
+PublishPort=127.0.0.1:1411:1411
+PublishPort=127.0.0.1:9464:9464
+
+Volume=%h/pocket-id-data:/app/data:Z
+
+# Optional: updates the image automatically, needs podman-auto-update.timer
+AutoUpdate=registry
+
+# Create this secret in the dedicated user's Podman secret store before starting.
+# The key encrypts token signing keys; keep a separate backup of it.
+Secret=pocket_id_encryption_key,type=mount,target=encryption_key
+Environment=ENCRYPTION_KEY_FILE=/run/secrets/encryption_key
+
+# Replace this hostname before deployment. Passkeys are tied to this exact HTTPS
+# origin, so changing the domain later requires enrolling new passkeys.
+Environment=APP_URL=https://id.example.com
+Environment=DB_CONNECTION_STRING=/app/data/pocket-id.db
+
+# Some Miscellaneous Options
+Environment=FILE_BACKEND=database
+Environment=AUDIT_LOG_RETENTION_DAYS=730
+Environment=OTEL_METRICS_EXPORTER=prometheus
+Environment=OTEL_EXPORTER_PROMETHEUS_HOST=0.0.0.0
+
+# The following three Environment variables stop Pocket ID from making any outwards
+# connections making it suitable to running it in an air-gapped server (if uncommenting
+# the last Environment Variable that is).
+Environment=VERSION_CHECK_DISABLED=true
+Environment=ANALYTICS_DISABLED=true
+# Environment=ICON_LIBRARY_URL=disabled
+
+# Application Configuration stays editable in the WebUI. Pocket ID defaults to
+# disabled public signups and email login, and required passkey user verification.
+# For an initial administrator without an email address, temporarily enable
+# both lines (!) below during first-run setup. Remove them after creating the admin,
+# restart, then turn off "Require User Email" in Application Configuration.
+# (!) Environment=UI_CONFIG_DISABLED=true
+# (!) Environment=REQUIRE_USER_EMAIL=false
+# Reject non-local HTTP OIDC callbacks unless intentionally changed for a client.
+Environment=ALLOW_INSECURE_CALLBACK_URLS=false
+
+# Only the host NGINX proxy can reach the published port from outside the host.
+# NGINX must overwrite X-Forwarded-For with $remote_addr, as in the example.
+Environment=TRUST_PROXY=true
+
+HealthCmd=["/app/pocket-id","healthcheck"]
+HealthInterval=1m30s
+HealthTimeout=5s
+HealthRetries=2
+HealthStartPeriod=10s
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/pocket-id-data
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
