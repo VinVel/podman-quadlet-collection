@@ -1,0 +1,26 @@
+# FileName=fail2ban-ui
+[Unit]
+Wants=network-online.target
+Wants=cockpit.socket
+After=network-online.target
+After=cockpit.socket
+
+[Container]
+ContainerName=fail2ban-ui
+Image=docker.io/swissmakers/fail2ban-ui:latest
+
+PublishPort=127.0.0.1:8436:8080
+
+Volume=%h/fail2ban-ui:/config:Z
+Volume=%h/fail2ban-etc:/etc/fail2ban:Z
+Volume=/var/run/fail2ban:/var/run/fail2ban
+Volume=/var/log:/var/log:ro
+Volume=/usr/share/GeoIP:/usr/share/GeoIP:ro
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/fail2ban-ui
+ExecStartPre=/usr/bin/mkdir -p %h/fail2ban-etc
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
