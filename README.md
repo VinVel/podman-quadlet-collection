@@ -1,6 +1,9 @@
 # Personal Collection
 
-This is my personal collection of podman `.quadlets` files for deploying some  applications that usually only offer a docker-compose. They do not strictly follow what the docker-compose intended, instead making use of podman and systemd native features. Additionally, they always try to use bind-mounts, because they make it easier to back them up. 
+This is my personal collection of podman `.quadlets` files for deploying some  applications that usually only offer a docker-compose. 
+They do not strictly follow what the docker-compose intended, instead making use of podman and systemd native features. 
+Additionally, they always try to use bind-mounts, because they make it easier to back them up. 
+For easier handling of rootless containers running under diferent users, I provide a few functions inside .zshrc which I can recommend you copy.
 
 # Installation
 
