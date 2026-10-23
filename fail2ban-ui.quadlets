@@ -7,15 +7,15 @@ After=network-online.target
 ContainerName=fail2ban-ui
 Image=docker.io/swissmakers/fail2ban-ui:latest
 AutoUpdate=registry
+SecurityLabelDisable=true
 
 PublishPort=127.0.0.1:8436:8080
 
-Volume=%h/fail2ban-ui:/config:Z
+Volume=%h/fail2ban-ui:/config
 Volume=/etc/fail2ban:/etc/fail2ban
 Volume=/var/run/fail2ban:/var/run/fail2ban
 Volume=/var/log:/var/log:ro
 Volume=/usr/share/GeoIP:/usr/share/GeoIP:ro
-
 
 Environment=OIDC_ENABLED=true
 Environment=OIDC_PROVIDER=pocketid
