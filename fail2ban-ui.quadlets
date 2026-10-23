@@ -18,6 +18,18 @@ Volume=/var/run/fail2ban:/var/run/fail2ban
 Volume=/var/log:/var/log:ro
 Volume=/usr/share/GeoIP:/usr/share/GeoIP:ro
 
+
+Environment=OIDC_ENABLED=true
+Environment=OIDC_PROVIDER=pocketid
+
+Secret=oidc_client_secret,type=env,target=OIDC_CLIENT_SECRET
+# e.g. https://fail2ban.example.com/auth/callback
+Secret=oidc_redirect_url,type=env,target=OIDC_REDIRECT_URL
+# e.g. https://id.example.com
+Secret=oidc_issuer_url,type=env,target=OIDC_ISSUER_URL
+# e.g. abcdefgh-abcde-abcde-abcdefghabcdefgh
+Secret=oidc_client_id,type=env,target=OIDC_CLIENT_ID
+
 [Service]
 ExecStartPre=/usr/bin/mkdir -p %h/fail2ban-ui
 Restart=on-failure
