@@ -1,9 +1,7 @@
 # FileName=fail2ban-ui
 [Unit]
 Wants=network-online.target
-Wants=cockpit.socket
 After=network-online.target
-After=cockpit.socket
 
 [Container]
 ContainerName=fail2ban-ui
