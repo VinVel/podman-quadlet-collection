@@ -6,6 +6,7 @@ After=network-online.target
 [Container]
 ContainerName=stalwart
 Image=docker.io/stalwartlabs/stalwart:v0.16
+AutoUpdate=registry
 
 UserNS=keep-id:uid=2000,gid=2000
 

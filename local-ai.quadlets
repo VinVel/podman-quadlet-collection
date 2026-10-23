@@ -21,6 +21,7 @@ HealthStartPeriod=40s
 HealthTimeout=10s
 
 Image=docker.io/ollama/ollama:latest
+AutoUpdate=registry
 Pod=local-ai.pod
 Volume=%h/ollama-data:/root/.ollama:Z
 
@@ -46,6 +47,7 @@ After=ollama.service
 
 [Container]
 Image=ghcr.io/open-webui/open-webui:cuda
+AutoUpdate=registry
 Volume=%h/open-webui-data:/app/backend/data:Z
 Pod=local-ai.pod
 

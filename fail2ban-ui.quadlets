@@ -8,6 +8,7 @@ After=cockpit.socket
 [Container]
 ContainerName=fail2ban-ui
 Image=docker.io/swissmakers/fail2ban-ui:latest
+AutoUpdate=registry
 
 PublishPort=127.0.0.1:8436:8080
 
