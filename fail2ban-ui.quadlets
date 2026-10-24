@@ -3,13 +3,25 @@
 Wants=network-online.target
 After=network-online.target
 
+[Pod]
+PodName=fail2ban-ui-pod
+PublishPort=127.0.0.1:8436:8080
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+
+---
+
+# FileName=fail2ban-ui
 [Container]
 ContainerName=fail2ban-ui
 Image=docker.io/swissmakers/fail2ban-ui:latest
+Pod=fail2ban-ui.pod
 AutoUpdate=registry
 SecurityLabelDisable=true
-
-PublishPort=127.0.0.1:8436:8080
 
 Volume=%h/fail2ban-ui:/config
 Volume=/etc/fail2ban:/etc/fail2ban
@@ -31,6 +43,3 @@ Secret=oidc_client_id,type=env,target=OIDC_CLIENT_ID
 [Service]
 ExecStartPre=/usr/bin/mkdir -p %h/fail2ban-ui
 Restart=on-failure
-
-[Install]
-WantedBy=default.target

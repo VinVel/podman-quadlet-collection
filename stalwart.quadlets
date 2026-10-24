@@ -3,11 +3,8 @@
 Wants=network-online.target
 After=network-online.target
 
-[Container]
-ContainerName=stalwart
-Image=docker.io/stalwartlabs/stalwart:v0.16
-AutoUpdate=registry
-
+[Pod]
+PodName=stalwart-pod
 UserNS=keep-id:uid=2000,gid=2000
 
 PublishPort=127.0.0.1:4343:443
@@ -17,6 +14,22 @@ PublishPort=127.0.0.1:1465:465
 PublishPort=127.0.0.1:9393:993
 PublishPort=127.0.0.1:4190:4190
 
+[Service]
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+
+---
+
+# FileName=stalwart
+[Container]
+ContainerName=stalwart
+Image=docker.io/stalwartlabs/stalwart:v0.16
+Pod=stalwart.pod
+AutoUpdate=registry
+
 Volume=%h/stalwart-etc:/etc/stalwart:z
 Volume=%h/stalwart-data:/var/lib/stalwart:Z
 
@@ -25,6 +38,3 @@ ExecStartPre=/usr/bin/mkdir -p %h/stalwart-etc
 ExecStartPre=/usr/bin/mkdir -p %h/stalwart-data
 Restart=always
 RestartSec=5
-
-[Install]
-WantedBy=default.target
