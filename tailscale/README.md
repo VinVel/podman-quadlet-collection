@@ -23,11 +23,23 @@ Restrict this client to your intended Pocket ID group. Headscale also checks
 that group via `oidc.allowed_groups`. Using the same client for Headplane lets
 it match a Headplane sign-in to the corresponding Headscale user.
 
+From the repository root, replace the example Headplane UI hostname in the
+README, Headplane config, and NGINX example before installing:
+
+```sh
+headplane_domain='ui.yourdomain.tld'
+sed -i "s/heaplane\.example\.com/$headplane_domain/g" \
+  tailscale/README.md tailscale/headplane.yaml tailscale/nginx.conf.example
+```
+
+Set the Headscale and Pocket ID hostnames separately; they serve different
+endpoints. Run the installation commands below from the `tailscale` directory.
+
 ## Install and create secrets
 
 ```sh
 tailscale podman quadlet install --application=tailscale \
-  "$PWD/headplane.quadlets" "$PWD/headscale.yaml" "$PWD/headplane.yaml"
+  "$PWD/tailscale.quadlets" "$PWD/headscale.yaml" "$PWD/headplane.yaml"
 
 tailscale systemctl --user enable --now podman.socket
 
