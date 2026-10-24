@@ -1,0 +1,103 @@
+# FileName=tailscale
+[Unit]
+Wants=network-online.target
+After=network-online.target
+
+[Pod]
+PodName=tailscale
+# Give host-loopback connections a stable source address inside the pod.
+# Headscale trusts only this address for NGINX's real-client-IP header.
+Network=pasta:--map-host-loopback,192.0.2.1
+PublishPort=127.0.0.1:8990:8080
+PublishPort=127.0.0.1:8991:3000
+# Headscale STUN must be publicly reachable; pasta forwards the client IP.
+PublishPort=0.0.0.0:3478:3478/udp
+
+[Service]
+Restart=always
+RestartSec=5
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target
+
+---
+
+# FileName=headscale
+[Container]
+ContainerName=headscale
+Image=docker.io/headscale/headscale:0.29
+Pod=tailscale.pod
+ReadOnly=true
+# Headplane locates this container by label when applying Settings changes.
+Label=me.tale.headplane.target=headscale
+
+# Both containers read this file; Headplane writes it through a separate mount.
+Volume=%h/.config/containers/systemd/tailscale/headscale.yaml:/etc/headscale/config.yaml:ro,z
+Volume=%h/headscale-data:/var/lib/headscale:Z
+
+Tmpfs=/var/run/headscale:rw,nodev,nosuid,mode=0755
+
+# Files under /run/secrets/; paths are referenced by headscale.yaml.
+# oidc.client_secret_path: Pocket ID client credential.
+Secret=headplane_oidc_client_secret,type=mount,target=headplane_oidc_client_secret
+# noise.private_key_path: Headscale control-plane identity.
+Secret=headscale_noise_private_key,type=mount,target=headscale_noise_private_key
+# derp.server.private_key_path: embedded DERP relay identity.
+Secret=headscale_derp_private_key,type=mount,target=headscale_derp_private_key
+
+Exec=serve
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/headscale-data
+Restart=always
+RestartSec=5
+TimeoutStartSec=900
+
+---
+
+# FileName=headplane
+[Unit]
+Requires=headscale.service
+After=headscale.service
+Requires=podman.socket
+After=podman.socket
+
+[Container]
+ContainerName=headplane
+Image=ghcr.io/tale/headplane:0.8
+Pod=tailscale.pod
+# The API key is issued after Headscale starts. Starting the pod must not
+# start this container until the secret exists.
+StartWithPod=false
+
+ReadOnly=true
+# Podman documents this exception for containers that use its API socket.
+# Headscale remains SELinux confined and labels the mounts it needs.
+SecurityLabelDisable=true
+
+Volume=%h/.config/containers/systemd/tailscale/headplane.yaml:/etc/headplane/config.yaml:ro
+Volume=%h/headplane-data:/var/lib/headplane
+# Headplane needs write access to update DNS and Settings. Headscale's mount
+# applies the shared SELinux label needed by that confined container.
+Volume=%h/.config/containers/systemd/tailscale/headscale.yaml:/etc/headscale/config.yaml:rw
+# The built-in rootless socket is ephemeral and lives under %t
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro
+
+Tmpfs=/tmp:rw,nodev,nosuid
+# Files under /run/secrets/; paths are referenced by headplane.yaml.
+# oidc.client_secret_path: same Pocket ID client credential as Headscale.
+Secret=headplane_oidc_client_secret,type=mount,target=headplane_oidc_client_secret
+# headscale.api_key_path: Headplane's server-side access to Headscale.
+Secret=headplane_headscale_api_key,type=mount,target=headplane_headscale_api_key
+# server.cookie_secret_path: signs Headplane UI sessions.
+Secret=headplane_cookie_secret,type=mount,target=headplane_cookie_secret
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/headplane-data
+Restart=always
+RestartSec=5
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

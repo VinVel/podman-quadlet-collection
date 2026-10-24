@@ -1,0 +1,55 @@
+# Replace the domains and Pocket ID client ID before install.
+server_url: https://headscale.example.com
+listen_addr: 0.0.0.0:8080
+grpc_listen_addr: 127.0.0.1:50443
+disable_check_updates: true
+# pasta maps host-loopback connections to this fixed address inside the pod.
+# Trust NGINX's sanitized client-IP header only from that single TCP peer.
+trusted_proxies: [192.0.2.1/32]
+
+# Keep Headscale's WireGuard control-plane key in a Podman secret.
+noise:
+  private_key_path: /run/secrets/headscale_noise_private_key
+
+# Headscale requires at least one address prefix for tailnet devices.
+prefixes:
+  v4: 100.64.0.0/10
+  v6: fd7a:115c:a1e0::/48
+
+# SQLite and application state stay in the user's SELinux-relabeled bind mount.
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+
+# Self-host the DERP relay. NGINX routes HTTPS; Headscale receives UDP/3478
+# directly through the pod's pasta publication and the host firewalld rule.
+derp:
+  server:
+    enabled: true
+    region_id: 999
+    region_code: headscale
+    region_name: Headscale Embedded DERP
+    stun_listen_addr: 0.0.0.0:3478
+    private_key_path: /run/secrets/headscale_derp_private_key
+
+# Headplane can manage policy via Headscale's API without a policy bind mount.
+policy:
+  mode: database
+
+# MagicDNS suffix must differ from the public Headscale hostname.
+dns:
+  base_domain: tailnet.example.com
+  # Preserve each client's local resolvers; no global resolvers are configured.
+  override_local_dns: false
+
+# Pocket ID provides device enrollment through OIDC. Keep this client secret
+# as a mounted Podman secret; use the same Pocket ID client in Headplane.
+oidc:
+  issuer: https://id.example.com
+  client_id: headscale
+  client_secret_path: /run/secrets/headplane_oidc_client_secret
+  pkce:
+    enabled: true
+  scope: [openid, profile, email, groups]
+  allowed_groups: [headscale]

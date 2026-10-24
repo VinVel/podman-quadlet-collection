@@ -20,6 +20,9 @@ sudo -u system-user podman quadlet install ./podman-quadlet.quadlets
 sudo -u system-user systemctl --user daemon-reload
 ```
 
+The drop in files in `container.d` and `pod.d` are meant for when using Pocket-ID and other containers all in a rootless manner. Just put them under
+`etc/containers/systemd/users/container.d/` and `etc/containers/systemd/users/pod.d/` respectively.
+
 # License
 
 ```

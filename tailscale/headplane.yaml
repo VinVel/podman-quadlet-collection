@@ -1,0 +1,32 @@
+# Install beside headplane.quadlets. Values here are public
+# settings or paths to Podman secrets, never the secret contents.
+server:
+  # Browser-facing Headplane origin; Headplane adds /admin itself.
+  base_url: https://heaplane.example.com
+  cookie_secret_path: /run/secrets/headplane_cookie_secret
+
+headscale:
+  # Both containers share the pod network namespace.
+  url: http://127.0.0.1:8080
+  # Headscale's public control-server origin, separate from the UI.
+  public_url: https://headscale.example.com
+  api_key_path: /run/secrets/headplane_headscale_api_key
+  # Shared writable file used by the Settings and DNS editors.
+  config_path: /etc/headscale/config.yaml
+
+integration:
+  # Headplane uses Podman's Docker-compatible API to restart Headscale after
+  # changes to its configuration. The target is selected by the Quadlet label.
+  docker:
+    enabled: true
+
+oidc:
+  # Match Headscale's Pocket ID issuer and client ID for user linking.
+  issuer: https://id.example.com
+  client_id: headscale
+  client_secret_path: /run/secrets/headplane_oidc_client_secret
+  use_pkce: true
+  # Sign-in is through Pocket ID, rather than pasting Headscale API keys.
+  disable_api_key_login: true
+  # The first user becomes owner; later users receive view-only access.
+  default_role: viewer

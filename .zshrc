@@ -1,3 +1,5 @@
+alias create-password="openssl rand -base64 32 | tr -d '\n'"
+
 # Easier rootless usage
 
 ## Service accounts
