@@ -9,13 +9,6 @@ http {
         server 127.0.0.1:8991;
     }
 
-    # Headscale's Tailscale Control Protocol uses a POST upgrade with a custom
-    # Upgrade value; pass the original value rather than hard-coding websocket.
-    map $http_upgrade $headplane_connection_upgrade {
-        default upgrade;
-        '' close;
-    }
-
     server {
         listen 443 ssl;
         http2 on;
@@ -45,8 +38,9 @@ http {
             proxy_pass http://headplane_headscale;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
+            # Preserve Headscale's custom Upgrade value for Tailscale clients.
             proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $headplane_connection_upgrade;
+            proxy_set_header Connection "upgrade";
             # NGINX is the sole public proxy: replace any client-supplied IP.
             proxy_set_header True-Client-IP $remote_addr;
             proxy_set_header X-Real-IP $remote_addr;
@@ -78,7 +72,7 @@ http {
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $headplane_connection_upgrade;
+            proxy_set_header Connection "upgrade";
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $remote_addr;
             proxy_set_header X-Forwarded-Proto https;
